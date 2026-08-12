@@ -1,33 +1,60 @@
-# Object Tracking System Build Log
+## August 12, 2026 - Initial Python and OpenCV Setup
 
-## Project started on August 12, 2026.
+### Objective
 
-### Objective/Abstract
+Set up the Python development environment and begin processing real video data with the use of OpenCV.
 
-Design, build, and test a camera-based system capable of detecting and tracking a target while automatically controlling the camera's orientation to keep the target centered.
+### Work Completed
 
-### Initial Development Plan
+- Installed Python and configured it for use with Visual Studio Code.
+- Created virtual environment for the project.
+- Created a `.gitignore` file to prevent unnecessary files from being uploaded to Github.
+- Learned some basic Python concepts including:
+    - Variables
+    - Arithmetic operations
+    - `if`, `elif`, and `else` statements
+    -  Basic tracking error calculations
+    - Deadbands
+- Installed OpenCV and NumPy.
+- Recorded test footage using a smart phone and loaded the video into OpenCV.
+- Used OpenCV to read the video frame by frame.
+- Determined the dimensions of each video frame.
+- Calculated center coordinates of the video automatically.
+- Added a visual marker to display the center of the frame.
 
-Development for this project will be done incrementally:
+### What I learned From This
 
-1. Learn Python fundamentals
-2. Process video using OpenCV
-3. Detect and locate a target
-4. Calculate target position and tracking error
-5. Implement electronic motor control
-6. Design and build the camera movement mechanism
-7. Integrate vision and movement into a closed-loop tracking system.
-8. Test and quantify tracking performance.
-9. Improve system based on results from experiments.
+I learned that video can be treated as a sequence of individual images, which are frames. OpenCV can retrieve each frame individually, allowing for calculations and image processing to be performed before displaying the frame.
 
-### Current Experience
+I also learned how the position of a future tracking target can be represented using X and Y coordinates. The center of the camera image represents the desired target position. Tracking error can therefore be calculated by using the detected target coordinates and comparing those with the center coordinates.
 
-Beginning with no previous Python or computer vision experience.
+The equation I created to find both the horizontal and vertical error is as follows:
+`error = target_axisdirection - center_axisdirection`
 
-### Current Stage
+In the project, the equations are:
+`horizontal_error = target_x - center_x`
+`vertical_error = target_y - center_y`
 
-Project setup and development environment configuration.
+A positive or negative error indicates which direction the target is displaced from the center.
 
-### Next Milestone
+I also experimented with a deadband, which creates an acceptable range around the center where small tracking errors can be ignored. I decided to add a deadband in the hopes to prevent unnecessary motor movement or oscillation later on into the project.
 
-Set up Python development environment and successfully execute the first Python program.
+### Current Result
+
+The program can successfully:
+
+1. Open pre-recorded test footage.
+2. Read the footage frame by frame
+3. Determine the resolution of the video.
+4. Calculate the center of the frame.
+5. Display a marker at the calculated center.
+
+The system does not detect the target automatically yet.
+
+### Problems Encountered
+
+An if statement had incorrect indentation. This problem was nothing significant and was fixed quickly.
+
+### Next Step
+
+Implement basic computer vision to distinguish a colored target from its sorroundings, determine the target's X/Y coordinates, and compare those coordinates with the center of the frame.

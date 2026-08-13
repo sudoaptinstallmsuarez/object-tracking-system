@@ -1,31 +1,39 @@
-## August 12, 2026 - Initial Target Detection
+## August 12, 2026 - Target Validation and Directional Tracking
 
 ### Objective
-
-Develop an initial detection system capable of location and tracking a colored target in prerecorded video footage.
+Improve the target detection system so that my system can determine whether a detected region is a valid target, handle situations where the target is lost / out of the frame, and determine which direction the target is located relative to the center of the camera frame.
 
 ### Work Completed
-
-Created program `color_detection.py` that, when executed, tracks a moving green object in prerecorded footage and displays a bounding box around it and a dot that marks where the center of the object is.
+- Added target-loss handling so that the program no longer assumes a target is present in every frame.
+- Added contour-area measurement using OpenCV.
+- Added a minimum contour area requirement of 6000 square pixels to help prevent small green areas in the frame from being falsely identified as the desired target.
+- Added 20-pixel deadband around the center of the video frame.
+- Used horizontal and vertical tracking error to determine whether the target is left, right, up, down, or sufficiently centered.
+- Tested the program with footage where the target enters and leaves the camera frame.
+- Reorganized the program so that target coordinates along with tracking errors are only calculated when there is a valid target.
 
 ### What I Learned
+I learned that detecting a contour does not necessarily mean that the intended target has been identified. To reduce any potential occurences of this problem, I measured the area of the largest detected contour and required it to have an area greater than 6000 square pixels before the program would accept it as a valid target.
 
-I learned a lot while making the color_detection program, notably:
-- What a binary mask is and created one.
-- How to convert BGR frames to HSV
-- What contours are and used them to locate detected regions.
-- How a bounding rectangle can be used to determine the center coordinates of a detected target.
-- How the target's coordinates can be compared with the center of the videof rame to calculate horizontal and vertical tracking error.
+I also learned more about conditional program flow. At one point, the program attempted to use the variables `x`, `y`, `w`, and `h` even when the detected contour did not meet the minimum-area requirement. Because those variables had not been created yet in that situation, the program crashed. I fixed this by making the calculations that depend on these variables occur only after a target has been validated.
 
-### Current Result
+### Testing / Results
+The program was tested using prerecorded footage containing periods where the green target was visible and periods where it was completely out of the frame.
 
-- Successfully tracked the green target throughout the test footage.
+The prorgam successfully:
+- Detected the green target when visible
+- Rejects detected contours below the minimum area requirement
+- Reports when the target has been lost.
+- Resumes tracking when the target reappears.
+- Calculates horizontal and vertical tracking error.
+- Determines whether the target is left, right, above, below, or centered within the deadband.
 
-### Limitations / Problems Identified
+### Current Limitations
+The system still assumes that the largest sufficiently large green region is the intended target. A different green object in the camera frame that satisfies the HSV and minimum-area requirements could therefore be incorrectly tracked.
 
-- The current algorithm assumes that the largest detected green region in the footage is the desired target. If there was another large green object in the footage, it might pick that up as the desired target, even if it is not.
-- Target-loss handling has not been implemented yet, so tracking-error calculations assume a target has been detected. If the target was not present in the footage, the algorithm would not know that.
+The current system also uses a fixed HSV range, minimum contour area, and deadband. These values would likely need to be adjusted for different targets, lighting conditions, tracking requirements, or any case that is not covered by the current configuration.
 
 ### Next Step
+Improve the visual output of the tracking program by displaying useful tracking information directly on the video.
 
-Implement target-loss handling so that the program can recognize when no valid target is detected and avoid calculating tracking error from invalid target coordinates.
+After organization and improvements are finished with the prototype, begin preparing for integration with a physical pan-and-tilt camera system.

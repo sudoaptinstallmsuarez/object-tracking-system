@@ -3,3 +3,8 @@ __pycache__/
 *.pyc
 
 testing/videos/
+
+testing/data/*.csv
+
+__pycache__/
+*.pyc

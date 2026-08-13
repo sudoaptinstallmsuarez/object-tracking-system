@@ -1,0 +1,2 @@
+frame,time,target_detected,target_x,target_y,error_x,error_y,contour_area
+1,0.0,True,500,300,-40,20,12000

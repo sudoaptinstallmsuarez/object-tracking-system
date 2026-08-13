@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import csv
 
 video = cv2.VideoCapture("testing/videos/color_target_test_02.mov")
 
@@ -8,10 +9,34 @@ upper_green = np.array([85,255,255])
 minimum_area = 6000
 deadband = 20
 
+data_file = open(
+    "testing/tracking_data_01.csv",
+    "w",
+    newline=""
+)
+
+writer = csv.writer(data_file)
+writer.writerow([
+    "frame",
+    "time",
+    "target_detected",
+    "target_x",
+    "target_y",
+    "error_x",
+    "error_y",
+    "contour_area"
+])
+
+frame_number = 0
+
 while True:
     success, frame = video.read()
     if not success:
         break
+    frame_number += 1
+
+    time_ms = video.get(cv2.CAP_PROP_POS_MSEC)
+    time_s = round(time_ms / 1000, 3)
     hsv_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
     height, width, channels = frame.shape
@@ -75,6 +100,16 @@ while True:
             error_x = target_x - center_x
             error_y = target_y - center_y
 
+            writer.writerow([
+                frame_number,
+                time_s,
+                True,
+                target_x,
+                target_y,
+                error_x,
+                error_y,
+                contour_area
+            ])
 
             if error_x > deadband:
                 horizontal_direction = "RIGHT"
@@ -124,7 +159,7 @@ while True:
                 (0, 255, 0),
                 2
             )
-        else:
+        else: # target is lost because the contour area is too small
             cv2.putText(
                 frame,
                 lost_text,
@@ -134,7 +169,17 @@ while True:
                 (0, 0, 255),
                 lost_thickness
             )
-    else:
+            writer.writerow([
+                frame_number,
+                time_s,
+                False,
+                None,
+                None,
+                None,
+                None,
+                contour_area
+            ])
+    else: # target is lost because no contours were found
         cv2.putText(
             frame,
             lost_text,
@@ -144,6 +189,16 @@ while True:
             (0, 0, 255),
             lost_thickness
         )
+        writer.writerow([
+            frame_number,
+            time_s,
+            False,
+            None,
+            None,
+            None,
+            None,
+            0
+        ])
 
     cv2.imshow("Original", frame)
     cv2.imshow("HSV", hsv_frame)
@@ -152,3 +207,4 @@ while True:
         break
 video.release()
 cv2.destroyAllWindows()
+data_file.close()

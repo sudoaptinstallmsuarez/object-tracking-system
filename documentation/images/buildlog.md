@@ -1,39 +1,54 @@
-## August 12, 2026 - Target Validation and Directional Tracking
+## August 13, 2026 - Vision Prototype V1 - On-Screen Telemetry
 
 ### Objective
-Improve the target detection system so that my system can determine whether a detected region is a valid target, handle situations where the target is lost / out of the frame, and determine which direction the target is located relative to the center of the camera frame.
+Improve the visual output of the tracking program by displaying important tracking information on the video output rather than in the terminal. (for the most part)
 
 ### Work Completed
-- Added target-loss handling so that the program no longer assumes a target is present in every frame.
-- Added contour-area measurement using OpenCV.
-- Added a minimum contour area requirement of 6000 square pixels to help prevent small green areas in the frame from being falsely identified as the desired target.
-- Added 20-pixel deadband around the center of the video frame.
-- Used horizontal and vertical tracking error to determine whether the target is left, right, up, down, or sufficiently centered.
-- Tested the program with footage where the target enters and leaves the camera frame.
-- Reorganized the program so that target coordinates along with tracking errors are only calculated when there is a valid target.
+- Added marker to display the calculated center of the video frame.
+- Added on-screen directional telemetry showing the target's horizontal and vertical position relative to the frame center.
+- Added on-screen X and Y tracking error values.
+- Added a large red "TARGET LOST" warning which pops up when no valid target is detected.
+- Positioned the "TARGET LOST" warning so that it is horizontally centered relative to the video frame.
+- Used `cv2.getTextSize()` to determine the dimensions of displayed text before calculating its position, which helped in centering the "TARGET LOST" text.
+- Reorganized some variables for the target-loss text display to make their purpose clearer.
+- Reduced some terminal output, there are still functions printing to terminal for debugging purposes though.
 
-### What I Learned
-I learned that detecting a contour does not necessarily mean that the intended target has been identified. To reduce any potential occurences of this problem, I measured the area of the largest detected contour and required it to have an area greater than 6000 square pixels before the program would accept it as a valid target.
+### What I learned
+I learned how to use `cv2.putText()` to display information directly on an OpenCV video frame.
 
-I also learned more about conditional program flow. At one point, the program attempted to use the variables `x`, `y`, `w`, and `h` even when the detected contour did not meet the minimum-area requirement. Because those variables had not been created yet in that situation, the program crashed. I fixed this by making the calculations that depend on these variables occur only after a target has been validated.
+I also learned that the coordinates supplied to `cv2.putText()` do not represent the center of the text. To horizontally center the "TARGET LOST" warning, I first used `cv2.getTextSize()` to determine the width of the text and then calculated its starting X coordinate relative to the center of the frame.
+
+I learned a bit more about variable scope and program flow when the program initially began producing an error because `lost_text_x` and `lost_text_y` were only being created when a valid target was detected. These variables were needed when no valid target was detected, but they had not been created in that program path. I fixed this by calculating them before the target-detection logic so that they exist regardless of whether a target is detected.
+
+I also began to become more conscious of what I name my variables, because I want to make sure that called variables are easily identifiable when it comes to where they are supposed to link to.
 
 ### Testing / Results
-The program was tested using prerecorded footage containing periods where the green target was visible and periods where it was completely out of the frame.
+The program successfully displays:
 
-The prorgam successfully:
-- Detected the green target when visible
-- Rejects detected contours below the minimum area requirement
-- Reports when the target has been lost.
-- Resumes tracking when the target reappears.
-- Calculates horizontal and vertical tracking error.
-- Determines whether the target is left, right, above, below, or centered within the deadband.
+- The detected target's bounding box.
+- The calculated center of the target.
+- The center of the video frame.
+- Horizontal and vertical tracking directions.
+- Horizontal and vertical error in pixels.
+- A centered "TARGET LOST" warning when a valid target cannot be detected.
+- Correctly reports the target as centered when both tracking errors fall within the 20-pixel deadband.
+
+The telemetry updates continuously as the target moves throughout prerecorded test footage.
+
+The program continues running correctly when the target enters or leaves the frame.
 
 ### Current Limitations
-The system still assumes that the largest sufficiently large green region is the intended target. A different green object in the camera frame that satisfies the HSV and minimum-area requirements could therefore be incorrectly tracked.
+The system still relies on color-based detection using a fixed HSV range.
 
-The current system also uses a fixed HSV range, minimum contour area, and deadband. These values would likely need to be adjusted for different targets, lighting conditions, tracking requirements, or any case that is not covered by the current configuration.
+The largest detected green contour that exceeds the minimum-area threshold is assumed to be the intended target.
+
+The current minimum contour area and deadband are fixed values that may need to be adjusted for different use cases such as camera resolutions, targets, etc.
+
+The system currently processes prerecorded video rather than a live camera feed.
+
+Tracking decisions are currently software outputs only and do not yet control a physical two-axis pan-and-tilt mechanism.
 
 ### Next Step
-Improve the visual output of the tracking program by displaying useful tracking information directly on the video.
+Begin recording tracking data to a CSV file so that the performance of the vision system can be analyzed quantitatively.
 
-After organization and improvements are finished with the prototype, begin preparing for integration with a physical pan-and-tilt camera system.
+Record information such as the time, frame number, target detection status, target coordinates, tracking error, and contour area. The purpose of recording this information is to assess the performance of the tracking system before integrating physical hardware.
